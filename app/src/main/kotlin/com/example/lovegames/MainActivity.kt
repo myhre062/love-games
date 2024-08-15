@@ -11,6 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.lovegames.compose.MainScreen
+import com.example.lovegames.compose.NavigationComponent
 import com.example.lovegames.ui.theme.LoveGamesTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +22,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LoveGamesTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                val navController = rememberNavController()
+                NavigationComponent(navController)
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun GreetingPreview() {
+fun DefaultPreview() {
     LoveGamesTheme {
-        Greeting("Android")
+        MainScreen(navController = rememberNavController())
     }
 }
