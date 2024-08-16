@@ -169,9 +169,10 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                 .align(Alignment.TopEnd),
             onClick = { viewModel.toggleSymmetry() },
         ) {
+            val iconResId = if (symmetry.value) R.drawable.side_by_side else R.drawable.heart_symmetry
             Icon(
                 modifier = Modifier.size(48.dp),
-                painter = painterResource(id = R.drawable.heart_symmetry),
+                painter = painterResource(id = iconResId),
                 contentDescription = stringResource(id = R.string.toggle),
             )
         }
