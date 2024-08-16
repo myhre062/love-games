@@ -3,6 +3,7 @@ package com.lovegames.thirtysixforlove.compose
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -62,6 +69,22 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
         },
         animationSpec = tween(durationMillis = 600)
     )
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val triggerSnackbar = remember { mutableStateOf(false) }
+    val keepTrack = stringResource(id = R.string.keep_track)
+    val ok = stringResource(id = R.string.ok)
+
+    LaunchedEffect(triggerSnackbar.value) {
+        if (triggerSnackbar.value && currentQuestionIndex.value == 0) {
+            snackbarHostState.showSnackbar(
+                message = keepTrack,
+                actionLabel = ok,
+                duration = SnackbarDuration.Short
+            )
+            triggerSnackbar.value = false // Reset the trigger
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -171,7 +194,7 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
         ) {
             val iconResId = if (symmetry.value) R.drawable.side_by_side else R.drawable.heart_symmetry
             Icon(
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(96.dp),
                 painter = painterResource(id = iconResId),
                 contentDescription = stringResource(id = R.string.toggle),
             )
@@ -183,6 +206,20 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                 .padding(16.dp)
                 .size(24.dp)
                 .background(color = color, shape = CircleShape)
+                .then(
+                    if (currentQuestionIndex.value == 0) {
+                        Modifier.clickable {
+                            triggerSnackbar.value = true // Set the trigger to launch the snackbar
+                        }
+                    } else Modifier
+                )
+        )
+
+        SnackbarHost(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 40.dp),
+            hostState = snackbarHostState
         )
 
     }
