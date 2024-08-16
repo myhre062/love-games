@@ -170,6 +170,7 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
             onClick = { viewModel.toggleSymmetry() },
         ) {
             Icon(
+                modifier = Modifier.size(48.dp),
                 painter = painterResource(id = R.drawable.heart_symmetry),
                 contentDescription = stringResource(id = R.string.toggle),
             )
