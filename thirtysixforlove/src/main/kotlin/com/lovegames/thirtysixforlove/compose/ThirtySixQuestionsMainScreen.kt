@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -72,14 +73,12 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
 
     val snackbarHostState = remember { SnackbarHostState() }
     val triggerSnackbar = remember { mutableStateOf(false) }
-    val keepTrack = stringResource(id = R.string.keep_track)
-    val ok = stringResource(id = R.string.ok)
+    val keepTrack =stringResource(id = R.string.keep_track)
 
     LaunchedEffect(triggerSnackbar.value) {
         if (triggerSnackbar.value && currentQuestionIndex.value == 0) {
             snackbarHostState.showSnackbar(
                 message = keepTrack,
-                actionLabel = ok,
                 duration = SnackbarDuration.Short
             )
             triggerSnackbar.value = false // Reset the trigger
@@ -215,11 +214,9 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                 )
         )
 
-        SnackbarHost(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp),
-            hostState = snackbarHostState
+        CustomSnackbarHost(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            snackbarHostState = snackbarHostState
         )
 
     }
@@ -234,6 +231,29 @@ fun Question(
         text = stringResource(id = questionResId),
         modifier = Modifier.rotate(if (isUpsideDown) 180f else 0f),
         textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun CustomSnackbarHost(
+    modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState
+) {
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = modifier.fillMaxWidth(), // Ensures the host takes full width
+        snackbar = { data ->
+            // Customizing the snackbar presentation
+            Box {
+                Snackbar(
+                    snackbarData = data,
+                    modifier = modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 40.dp)
+                        .fillMaxWidth(0.5f) // Sets the snackbar to half width of its parent
+                )
+            }
+        }
     )
 }
 
