@@ -24,8 +24,8 @@ import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import com.lovegames.thirtysixforlove.R
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thritysixforlove.R
 
 @Composable
 fun ThirtySixQuestionsTheyMightKissScreen(

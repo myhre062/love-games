@@ -3,7 +3,7 @@ package com.lovegames.thirtysixforlove
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import com.lovegames.thirtysixforlove.R
+import com.lovegames.thritysixforlove.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

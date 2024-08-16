@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.lovegames.thirtysixforlove.R
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thritysixforlove.R
 import kotlin.math.cos
 import kotlin.math.sin
 
