@@ -1,4 +1,4 @@
-package com.lovegames.thritysixforlove.compose
+package com.lovegames.thirtysixforlove.compose
 
 import android.content.Intent
 import android.net.Uri
@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.lovegames.thritysixforlove.R
 
 @Composable
 fun ThirtySixQuestionsDisclaimerScreen(navController: NavController) {

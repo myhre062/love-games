@@ -1,4 +1,4 @@
-package com.lovegames.thritysixforlove
+package com.lovegames.thirtysixforlove
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

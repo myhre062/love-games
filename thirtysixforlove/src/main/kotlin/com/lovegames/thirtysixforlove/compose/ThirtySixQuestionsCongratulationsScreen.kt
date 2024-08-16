@@ -1,4 +1,4 @@
-package com.lovegames.thritysixforlove.compose
+package com.lovegames.thirtysixforlove.compose
 
 import android.media.MediaPlayer
 import androidx.compose.foundation.Canvas
@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.lovegames.thritysixforlove.R
-import com.lovegames.thritysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.R
+import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 import kotlin.math.cos
 import kotlin.math.sin
 

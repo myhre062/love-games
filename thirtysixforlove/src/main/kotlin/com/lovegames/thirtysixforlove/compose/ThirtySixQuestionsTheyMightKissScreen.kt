@@ -1,4 +1,4 @@
-package com.lovegames.thritysixforlove.compose
+package com.lovegames.thirtysixforlove.compose
 
 import android.content.Intent
 import android.net.Uri
@@ -24,8 +24,8 @@ import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import com.lovegames.thritysixforlove.R
-import com.lovegames.thritysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.R
+import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 
 @Composable
 fun ThirtySixQuestionsTheyMightKissScreen(

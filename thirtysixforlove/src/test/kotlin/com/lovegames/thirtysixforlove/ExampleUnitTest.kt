@@ -1,4 +1,4 @@
-package com.lovegames.thritysixforlove
+package com.lovegames.thirtysixforlove
 
 import org.junit.Test
 

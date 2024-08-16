@@ -5,12 +5,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.lovegames.thritysixforlove.ThirtySixQuestionsViewModelViewModel
-import com.lovegames.thritysixforlove.compose.ThirtySixQuestionsCongratulationsScreen
-import com.lovegames.thritysixforlove.compose.ThirtySixQuestionsDisclaimerScreen
-import com.lovegames.thritysixforlove.compose.ThirtySixQuestionsInstructionsScreen
-import com.lovegames.thritysixforlove.compose.ThirtySixQuestionsMainScreen
-import com.lovegames.thritysixforlove.compose.ThirtySixQuestionsTheyMightKissScreen
+import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsCongratulationsScreen
+import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsDisclaimerScreen
+import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsInstructionsScreen
+import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsMainScreen
+import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsTheyMightKissScreen
 
 
 @Composable
