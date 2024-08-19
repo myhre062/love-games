@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,9 +46,11 @@ import androidx.navigation.compose.rememberNavController
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 import com.lovegames.thritysixforlove.R
 
-
 @Composable
-fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel, navController: NavController) {
+fun ThirtySixQuestionsMainScreen(
+    viewModel: ThirtySixQuestionsViewModelViewModel,
+    navController: NavController
+) {
     val currentQuestionIndex = viewModel.currentQuestionIndex.collectAsState()
     val symmetry = viewModel.symmetry.collectAsState()
     val currentQuestionIndexValue = currentQuestionIndex.value + 1
@@ -73,7 +76,7 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
 
     val snackbarHostState = remember { SnackbarHostState() }
     val triggerSnackbar = remember { mutableStateOf(false) }
-    val keepTrack =stringResource(id = R.string.keep_track)
+    val keepTrack = stringResource(id = R.string.keep_track)
 
     LaunchedEffect(triggerSnackbar.value) {
         if (triggerSnackbar.value && currentQuestionIndex.value == 0) {
@@ -119,9 +122,9 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-
                         if (symmetry.value) {
+                            Spacer(modifier = Modifier.height(16.dp))
+
                             Question(
                                 questionResId = viewModel.getCurrentQuestionResId(),
                                 isUpsideDown = true
@@ -138,7 +141,19 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(256.dp))
+                            Spacer(modifier = Modifier.height(128.dp))
+
+                            if (currentQuestionIndexValue == 11) {
+                                Timer(
+                                    viewModel = viewModel,
+                                    handleColor = Color.Red,
+                                    inactiveBarColor = Color.Red,
+                                    activeBarColor = Color.Magenta,
+                                    modifier = Modifier.size(148.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(128.dp))
 
                             Text(
                                 text = stringResource(
@@ -155,6 +170,8 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                                 isUpsideDown = false
                             )
                         } else {
+                            Spacer(modifier = Modifier.height(16.dp))
+
                             Text(
                                 text = stringResource(
                                     id = R.string.question_number,
@@ -199,6 +216,24 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
             )
         }
 
+        Box(modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(bottom = 240.dp)
+        ) {
+            // Show the Timer only on question 11 when symmetry is false
+            if (!symmetry.value) {
+                Column(modifier = Modifier.alpha(if (currentQuestionIndexValue == 11) 1f else 0f)) {
+                    Timer(
+                        viewModel = viewModel,
+                        handleColor = Color.Red,
+                        inactiveBarColor = Color.Red,
+                        activeBarColor = Color.Magenta,
+                        modifier = Modifier.size(148.dp)
+                    )
+                }
+            }
+        }
+
         Box(
             modifier = Modifier
                 .offset(x = animatedX, y = animatedY)
@@ -218,7 +253,6 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
             modifier = Modifier.align(Alignment.BottomCenter),
             snackbarHostState = snackbarHostState
         )
-
     }
 }
 
