@@ -19,6 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -32,10 +34,12 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.TimerCompletionAction
 import kotlin.math.cos
 import kotlin.math.sin
 
-
+// Shout out to the man the myth the legend, Philipp Lackner for this timer!
+// https://youtu.be/2mKhmMrt2Ok?si=DOQHxX3FBVGaRq6q
 @Composable
 fun Timer(
     viewModel: ThirtySixQuestionsViewModelViewModel,
@@ -43,14 +47,26 @@ fun Timer(
     inactiveBarColor: Color,
     activeBarColor: Color,
     modifier: Modifier = Modifier,
-    strokeWidth: Dp = 4.dp
+    strokeWidth: Dp = 4.dp,
+    action: TimerCompletionAction = TimerCompletionAction.DoNothing
 ) {
     val currentTime by viewModel.currentTime.collectAsState()
     val isTimerRunning by viewModel.isTimerRunning.collectAsState()
-    val totalTime = 240000L
+    val totalTime = viewModel.totalTime
 
     var size by remember { mutableStateOf(IntSize.Zero) }
     val value = currentTime / totalTime.toFloat()
+
+    // Track the rotation state
+    var rotationAngle by remember { mutableStateOf(0f) }
+
+    // Listen to TimerCompletionAction changes and rotate the timer if RotateTimer action is triggered
+    if (action is TimerCompletionAction.RotateTimer) {
+        rotationAngle = 180f
+    }
+
+    // Use alpha to control visibility (0f for hidden, 1f for visible)
+    val timerVisibility = if (action == TimerCompletionAction.DismissTimer) 0f else 1f
 
     Box(
         contentAlignment = Alignment.Center,
@@ -58,6 +74,8 @@ fun Timer(
             .onSizeChanged {
                 size = it
             }
+            .rotate(rotationAngle) // Apply rotation to the entire timer box
+            .alpha(timerVisibility)
     ) {
         Canvas(modifier = modifier) {
             drawArc(
@@ -104,7 +122,7 @@ fun Timer(
         if (currentTime == 0L || currentTime == 240000L) {
             // Show heart Icon
             IconButton(
-                onClick = { viewModel.toggleTimer() },
+                onClick = { viewModel.toggleTimer(TimerCompletionAction.DoNothing) },
             ) {
                 val iconSize = with(LocalDensity.current) { 44.sp.toDp() }
 
@@ -120,7 +138,7 @@ fun Timer(
             Text(
                 modifier = Modifier
                     .padding(16.dp)
-                    .clickable { viewModel.toggleTimer() },
+                    .clickable { viewModel.toggleTimer(TimerCompletionAction.DoNothing) },
                 text = formatTime((currentTime / 1000L).toInt()),
                 fontSize = 44.sp,
                 fontWeight = FontWeight.Bold,
@@ -134,5 +152,9 @@ fun Timer(
 private fun formatTime(seconds: Int): String {
     val minutes = seconds / 60
     val remainingSeconds = seconds % 60
-    return String.format("%1d:%02d", minutes, remainingSeconds)
+    return when {
+        seconds >= 60 -> String.format("%1d:%02d", minutes, remainingSeconds)
+        seconds >= 10 -> String.format("%02d", remainingSeconds)
+        else -> String.format("%01d", remainingSeconds)
+    }
 }

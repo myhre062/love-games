@@ -31,7 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.TimerCompletionAction
+import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import com.lovegames.thritysixforlove.R
 
 @Composable
@@ -51,16 +52,34 @@ fun ThirtySixQuestionsMainScreen(
     viewModel: ThirtySixQuestionsViewModelViewModel,
     navController: NavController
 ) {
-    val currentQuestionIndex = viewModel.currentQuestionIndex.collectAsState()
-    val symmetry = viewModel.symmetry.collectAsState()
-    val currentQuestionIndexValue = currentQuestionIndex.value + 1
+    val state = viewModel.state().collectAsState().value
+    when (state) {
+        is ThirtySixQuestionsState.Content -> {
+            ThirtySixQuestionsMainScreenContent(
+                state,
+                viewModel,
+                navController
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThirtySixQuestionsMainScreenContent(
+    state: ThirtySixQuestionsState.Content,
+    viewModel: ThirtySixQuestionsViewModelViewModel,
+    navController: NavController
+) {
+    val currentQuestionIndex = state.currentQuestionIndex
+    val symmetry = state.symmetry
+    val currentQuestionIndexValue = currentQuestionIndex + 1
     val isEvenQuestion = currentQuestionIndexValue % 2 == 0
     val isOddQuestion = currentQuestionIndexValue % 2 == 1
-    val color = if (isEvenQuestion) Color.Magenta else Color.Red
+    val color = if (isEvenQuestion || state.playerTurnTimerCount == 1) Color.Magenta else Color.Red
 
     val animatedX by animateDpAsState(
         targetValue = when {
-            !symmetry.value && isEvenQuestion -> 392.dp
+            !symmetry && (isEvenQuestion || state.playerTurnTimerCount == 1) -> 392.dp
             else -> 0.dp
         },
         animationSpec = tween(durationMillis = 600)
@@ -68,7 +87,8 @@ fun ThirtySixQuestionsMainScreen(
 
     val animatedY by animateDpAsState(
         targetValue = when {
-            symmetry.value && isOddQuestion || !symmetry.value -> 941.5.dp
+            symmetry && state.playerTurnTimerCount == 1 -> 0.dp
+            symmetry && isOddQuestion || !symmetry -> 941.5.dp
             else -> 0.dp
         },
         animationSpec = tween(durationMillis = 600)
@@ -78,8 +98,19 @@ fun ThirtySixQuestionsMainScreen(
     val triggerSnackbar = remember { mutableStateOf(false) }
     val keepTrack = stringResource(id = R.string.keep_track)
 
+    val action = when {
+        // If symmetry is true, rotate on first completion, dismiss on second completion.
+        symmetry && state.playerTurnTimerCount == 1 -> TimerCompletionAction.RotateTimer
+        symmetry && state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
+
+        // If symmetry is false, do not rotate but dismiss on second completion.
+        !symmetry && state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
+
+        else -> TimerCompletionAction.DoNothing
+    }
+
     LaunchedEffect(triggerSnackbar.value) {
-        if (triggerSnackbar.value && currentQuestionIndex.value == 0) {
+        if (triggerSnackbar.value && currentQuestionIndex == 0) {
             snackbarHostState.showSnackbar(
                 message = keepTrack,
                 duration = SnackbarDuration.Short
@@ -122,7 +153,7 @@ fun ThirtySixQuestionsMainScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        if (symmetry.value) {
+                        if (symmetry) {
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Question(
@@ -136,20 +167,21 @@ fun ThirtySixQuestionsMainScreen(
                                 modifier = Modifier.rotate(180f),
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
 
                             Spacer(modifier = Modifier.height(128.dp))
 
-                            if (currentQuestionIndexValue == 11) {
+                            if (currentQuestionIndexValue == 11 && action != TimerCompletionAction.DismissTimer) {
                                 Timer(
                                     viewModel = viewModel,
                                     handleColor = Color.Red,
                                     inactiveBarColor = Color.Red,
                                     activeBarColor = Color.Magenta,
-                                    modifier = Modifier.size(148.dp)
+                                    modifier = Modifier.size(148.dp),
+                                    action = action
                                 )
                             }
 
@@ -158,7 +190,7 @@ fun ThirtySixQuestionsMainScreen(
                             Text(
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
@@ -175,7 +207,7 @@ fun ThirtySixQuestionsMainScreen(
                             Text(
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
@@ -208,7 +240,7 @@ fun ThirtySixQuestionsMainScreen(
                 .align(Alignment.TopEnd),
             onClick = { viewModel.toggleSymmetry() },
         ) {
-            val iconResId = if (symmetry.value) R.drawable.side_by_side else R.drawable.heart_symmetry
+            val iconResId = if (symmetry) R.drawable.side_by_side else R.drawable.heart_symmetry
             Icon(
                 modifier = Modifier.size(96.dp),
                 painter = painterResource(id = iconResId),
@@ -221,14 +253,19 @@ fun ThirtySixQuestionsMainScreen(
             .padding(bottom = 240.dp)
         ) {
             // Show the Timer only on question 11 when symmetry is false
-            if (!symmetry.value) {
-                Column(modifier = Modifier.alpha(if (currentQuestionIndexValue == 11) 1f else 0f)) {
+            if (
+                !symmetry
+                && action != TimerCompletionAction.DismissTimer
+                && currentQuestionIndexValue == 11
+            ) {
+                Column {
                     Timer(
                         viewModel = viewModel,
                         handleColor = Color.Red,
                         inactiveBarColor = Color.Red,
                         activeBarColor = Color.Magenta,
-                        modifier = Modifier.size(148.dp)
+                        modifier = Modifier.size(148.dp),
+                        action = action
                     )
                 }
             }
@@ -241,7 +278,7 @@ fun ThirtySixQuestionsMainScreen(
                 .size(24.dp)
                 .background(color = color, shape = CircleShape)
                 .then(
-                    if (currentQuestionIndex.value == 0) {
+                    if (currentQuestionIndex == 0) {
                         Modifier.clickable {
                             triggerSnackbar.value = true // Set the trigger to launch the snackbar
                         }

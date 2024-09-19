@@ -31,16 +31,11 @@ fun ThirtySixQuestionsCongratulationsScreen(
     val hasPlayedSound = viewModel.hasPlayedSound
 
     // Remember if the sound has been played, and preserve it across navigation
-    var localHasPlayedSound by rememberSaveable { mutableStateOf(hasPlayedSound) }
-
-    if (timerCompleted && !localHasPlayedSound) {
+    if (timerCompleted && !hasPlayedSound) {
         val mediaPlayer = remember { MediaPlayer.create(context, R.raw.harp_strum) }
         DisposableEffect(Unit) {
+            viewModel.markSoundPlayed()
             mediaPlayer.start()
-            mediaPlayer.setOnCompletionListener {
-                viewModel.markSoundPlayed() // Update ViewModel state
-                localHasPlayedSound = true  // Update local state to prevent re-triggering
-            }
             onDispose { mediaPlayer.release() }
         }
     }
@@ -48,8 +43,7 @@ fun ThirtySixQuestionsCongratulationsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .background(Color.White),
+            .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
