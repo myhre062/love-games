@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 import com.lovegames.thirtysixforlove.TimerCompletionAction
+import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -59,14 +60,17 @@ fun Timer(
 
     // Track the rotation state
     var rotationAngle by remember { mutableStateOf(0f) }
+    var timerVisibility by remember { mutableStateOf(1f) }
 
     // Listen to TimerCompletionAction changes and rotate the timer if RotateTimer action is triggered
-    if (action is TimerCompletionAction.RotateTimer) {
-        rotationAngle = 180f
+    when (action) {
+        is TimerCompletionAction.RotateTimer-> { rotationAngle = 180f }
+        is TimerCompletionAction.DismissTimer -> { timerVisibility = 0f }
+        else -> {}
     }
 
     // Use alpha to control visibility (0f for hidden, 1f for visible)
-    val timerVisibility = if (action == TimerCompletionAction.DismissTimer) 0f else 1f
+
 
     Box(
         contentAlignment = Alignment.Center,

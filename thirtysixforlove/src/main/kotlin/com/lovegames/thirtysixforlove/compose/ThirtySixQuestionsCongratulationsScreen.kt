@@ -1,13 +1,11 @@
 package com.lovegames.thirtysixforlove.compose
 
 import android.media.MediaPlayer
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -19,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import com.lovegames.thritysixforlove.R
 
 @Composable
@@ -26,16 +25,33 @@ fun ThirtySixQuestionsCongratulationsScreen(
     viewModel: ThirtySixQuestionsViewModelViewModel,
     navController: NavController
 ) {
+    val state = viewModel.state().collectAsState().value
+
+    when (state) {
+        is ThirtySixQuestionsState.Content -> {
+            ThirtySixQuestionsCongratulationsScreenContnent(
+                viewModel,
+                navController,
+                state
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThirtySixQuestionsCongratulationsScreenContnent(
+    viewModel: ThirtySixQuestionsViewModelViewModel,
+    navController: NavController,
+    state: ThirtySixQuestionsState.Content,
+) {
     val context = LocalContext.current
-    val timerCompleted by viewModel.timerCompleted.collectAsState()
-    val hasPlayedSound = viewModel.hasPlayedSound
 
     // Remember if the sound has been played, and preserve it across navigation
-    if (timerCompleted && !hasPlayedSound) {
+    if (state.timerCompleted && !state.hasPlayedSound) {
         val mediaPlayer = remember { MediaPlayer.create(context, R.raw.harp_strum) }
         DisposableEffect(Unit) {
-            viewModel.markSoundPlayed()
             mediaPlayer.start()
+            viewModel.markSoundPlayed()
             onDispose { mediaPlayer.release() }
         }
     }
@@ -81,14 +97,14 @@ fun ThirtySixQuestionsCongratulationsScreen(
         }
 
         Column(
-            modifier = Modifier.alpha(if (timerCompleted) 1f else 0f),
+            modifier = Modifier.alpha(if (state.timerCompleted) 1f else 0f),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Button(
                 onClick = {
-                    if (timerCompleted) navController.navigate("thirty_six_questions_they_might_kiss_screen")
+                    if (state.timerCompleted) navController.navigate("thirty_six_questions_they_might_kiss_screen")
                 }
             ) {
                 Text(text = stringResource(R.string.thirty_six_questions_adventurous))
@@ -98,7 +114,7 @@ fun ThirtySixQuestionsCongratulationsScreen(
 
             Button(
                 onClick = {
-                    if (timerCompleted) {
+                    if (state.timerCompleted) {
                         viewModel.resetViewModel()
                         navController.navigate("main_screen")
                     }

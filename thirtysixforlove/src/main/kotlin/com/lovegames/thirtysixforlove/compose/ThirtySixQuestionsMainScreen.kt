@@ -101,10 +101,9 @@ private fun ThirtySixQuestionsMainScreenContent(
     val action = when {
         // If symmetry is true, rotate on first completion, dismiss on second completion.
         symmetry && state.playerTurnTimerCount == 1 -> TimerCompletionAction.RotateTimer
-        symmetry && state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
 
         // If symmetry is false, do not rotate but dismiss on second completion.
-        !symmetry && state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
+        state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
 
         else -> TimerCompletionAction.DoNothing
     }
@@ -174,7 +173,7 @@ private fun ThirtySixQuestionsMainScreenContent(
 
                             Spacer(modifier = Modifier.height(128.dp))
 
-                            if (currentQuestionIndexValue == 11 && action != TimerCompletionAction.DismissTimer) {
+                            if (currentQuestionIndexValue == 11 && state.showTimer) {
                                 Timer(
                                     viewModel = viewModel,
                                     handleColor = Color.Red,
@@ -255,7 +254,7 @@ private fun ThirtySixQuestionsMainScreenContent(
             // Show the Timer only on question 11 when symmetry is false
             if (
                 !symmetry
-                && action != TimerCompletionAction.DismissTimer
+                && state.showTimer
                 && currentQuestionIndexValue == 11
             ) {
                 Column {
