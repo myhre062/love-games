@@ -3,10 +3,13 @@ package com.lovegames.thirtysixforlove
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import com.lovegames.thritysixforlove.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ThirtySixQuestionsViewModelViewModel : ViewModel() {
@@ -49,93 +52,154 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         R.string.question_36
     )
 
-    private val _currentQuestionIndex = MutableStateFlow(0)
-    val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex
+    private val _thirtySixQuestionsStateFlow = MutableStateFlow<ThirtySixQuestionsState>(
+        ThirtySixQuestionsState.Content()
+    )
 
-    private val _symmetry = MutableStateFlow(false)
-    val symmetry: StateFlow<Boolean> = _symmetry
-
-    private val _totalTime = 240000L
-    private val _currentTime = MutableStateFlow(_totalTime)
+    val totalTime = 240000L // make sure this is 240000L (4 min) before pushing code
+    private val _currentTime = MutableStateFlow(totalTime)
     val currentTime: StateFlow<Long> = _currentTime
 
     private val _isTimerRunning = MutableStateFlow(false)
     val isTimerRunning: StateFlow<Boolean> = _isTimerRunning
 
-    private val _timerCompleted = MutableStateFlow(false)
-    val timerCompleted: StateFlow<Boolean> = _timerCompleted
-
-    var hasPlayedSound: Boolean = false
-
-
-    fun toggleTimer() {
+    fun toggleTimer(action: TimerCompletionAction) {
         if (_currentTime.value <= 0) {
-            _currentTime.value = _totalTime
+            _currentTime.value = totalTime
             _isTimerRunning.value = true
         } else {
             _isTimerRunning.value = !_isTimerRunning.value
         }
         if (_isTimerRunning.value) {
-            startTimer()
+            startTimer(action)
         }
     }
 
-    private fun startTimer() {
+    private fun startTimer(action: TimerCompletionAction) {
         viewModelScope.launch {
-            while (_isTimerRunning.value && _currentTime.value > 0) {
+            while (_isTimerRunning.value && _currentTime.value > 0L) {
                 delay(100L)
-                _currentTime.value -= 100L
-                if (_currentTime.value <= 0) {
-                    _isTimerRunning.value = false
-                    _timerCompleted.value = true
-                    hasPlayedSound = false
+                _currentTime.value = (_currentTime.value - 100L).coerceAtLeast(0L)
+            }
+            if (_currentTime.value == 0L) {
+                _isTimerRunning.value = false
+                // Increment playerTurnTimerCount
+                _thirtySixQuestionsStateFlow.update { state ->
+                    (state as ThirtySixQuestionsState.Content).copy(
+                        playerTurnTimerCount = state.playerTurnTimerCount + 1,
+                        timerCompleted = state.currentQuestionIndex >= questions.size - 1
+                    )
                 }
+
+                // Pass the completion action to update state
+                onTimerCompleted(action)
             }
         }
     }
 
-    fun markSoundPlayed() {
-        hasPlayedSound = true
+    private fun onTimerCompleted(action: TimerCompletionAction) {
+        when (action) {
+            TimerCompletionAction.PlaySound -> markSoundPlayed()
+            TimerCompletionAction.RotateTimer -> rotateTimer()
+            TimerCompletionAction.DismissTimer -> dismissTimer()
+            else -> {} // do nothing
+        }
     }
 
+    // Expose the state as a StateFlow
+    fun state(): StateFlow<ThirtySixQuestionsState> = _thirtySixQuestionsStateFlow.asStateFlow()
+
     fun toggleSymmetry() {
-        viewModelScope.launch {
-            _symmetry.value = !_symmetry.value
+        _thirtySixQuestionsStateFlow.update { state ->
+            (state as ThirtySixQuestionsState.Content).copy(symmetry = !state.symmetry)
         }
     }
 
     fun nextQuestion(navController: NavController) {
-        viewModelScope.launch {
-            if (_currentQuestionIndex.value < questions.size - 1) {
-                _currentQuestionIndex.value += 1
+        _thirtySixQuestionsStateFlow.update { state ->
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            val nextIndex = contentState.currentQuestionIndex + 1
+            if (nextIndex < questions.size) {
+                contentState.copy(currentQuestionIndex = nextIndex)
             } else {
+                resetTimer()
                 navController.navigate("thirty_six_questions_congratulations_screen")
+                contentState
             }
         }
     }
 
     fun previousQuestion(navController: NavController) {
-        viewModelScope.launch {
-            if (_currentQuestionIndex.value > 0) {
-                _currentQuestionIndex.value -= 1
+        _thirtySixQuestionsStateFlow.update { state ->
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            val prevIndex = contentState.currentQuestionIndex - 1
+            if (prevIndex >= 0) {
+                contentState.copy(currentQuestionIndex = prevIndex)
             } else {
                 navController.navigate("thirty_six_questions_instructions_screen")
+                contentState
+            }
+        }
+    }
+
+    fun markSoundPlayed() {
+        _thirtySixQuestionsStateFlow.update { state ->
+            (state as ThirtySixQuestionsState.Content).copy(hasPlayedSound = true)
+        }
+    }
+
+    private fun rotateTimer() {
+        _thirtySixQuestionsStateFlow.update { state ->
+            (state as ThirtySixQuestionsState.Content).copy(rotateTimer = true)
+        }
+    }
+
+    private fun dismissTimer() {
+        _thirtySixQuestionsStateFlow.update { state ->
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            if (contentState.playerTurnTimerCount == 2) {
+                contentState.copy(showTimer = false)
+            } else {
+                state
             }
         }
     }
 
     fun getCurrentQuestionResId(): Int {
-        return questions[_currentQuestionIndex.value]
+        val index = (_thirtySixQuestionsStateFlow.value as ThirtySixQuestionsState.Content).currentQuestionIndex
+        return if (index in questions.indices) {
+            questions[index]
+        } else {
+            R.string.question_1 // Fallback question if index is out of bounds.
+        }
     }
 
+    // Resets the ViewModel to the initial state
     fun resetViewModel() {
-        viewModelScope.launch {
-            _currentTime.value = _totalTime
-            _isTimerRunning.value = false
-            _timerCompleted.value = false
-            _currentQuestionIndex.value = 0
-            _symmetry.value = false
-            hasPlayedSound = false
+        _thirtySixQuestionsStateFlow.update { state ->
+            (state as ThirtySixQuestionsState.Content).copy(
+                currentQuestionIndex = 0,
+                symmetry = false,
+                playerTurnTimerCount = 0,
+                showTimer = true,
+                hasPlayedSound = false,
+                rotateTimer = false
+            )
+        }
+        resetTimer()
+    }
+
+    private fun resetTimer() {
+        _currentTime.value = totalTime
+        _isTimerRunning.value = false
+        _thirtySixQuestionsStateFlow.update { state ->
+            (state as ThirtySixQuestionsState.Content).copy(
+                playerTurnTimerCount = 0,
+                hasPlayedSound = false,
+                rotateTimer = false,
+                showTimer = true,
+                timerCompleted = false
+            )
         }
     }
 }

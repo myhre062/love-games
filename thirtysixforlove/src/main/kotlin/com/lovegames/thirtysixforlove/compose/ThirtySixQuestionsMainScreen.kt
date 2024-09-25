@@ -43,40 +43,81 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.TimerCompletionAction
+import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import com.lovegames.thritysixforlove.R
 
+@Composable
+fun ThirtySixQuestionsMainScreen(
+    viewModel: ThirtySixQuestionsViewModelViewModel,
+    navController: NavController
+) {
+    val state = viewModel.state().collectAsState().value
+    when (state) {
+        is ThirtySixQuestionsState.Content -> {
+            ThirtySixQuestionsMainScreenContent(
+                state,
+                viewModel,
+                navController
+            )
+        }
+    }
+}
 
 @Composable
-fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel, navController: NavController) {
-    val currentQuestionIndex = viewModel.currentQuestionIndex.collectAsState()
-    val symmetry = viewModel.symmetry.collectAsState()
-    val currentQuestionIndexValue = currentQuestionIndex.value + 1
+private fun ThirtySixQuestionsMainScreenContent(
+    state: ThirtySixQuestionsState.Content,
+    viewModel: ThirtySixQuestionsViewModelViewModel,
+    navController: NavController
+) {
+    val currentQuestionIndex = state.currentQuestionIndex
+    val symmetry = state.symmetry
+    val currentQuestionIndexValue = currentQuestionIndex + 1
     val isEvenQuestion = currentQuestionIndexValue % 2 == 0
     val isOddQuestion = currentQuestionIndexValue % 2 == 1
-    val color = if (isEvenQuestion) Color.Magenta else Color.Red
+    val isQuestion11 = currentQuestionIndex == 10
+    val color = if (isEvenQuestion || (state.playerTurnTimerCount >= 1 && isQuestion11)) Color.Magenta else Color.Red
+
+    val targetValueX = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 392.dp
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
+        !symmetry && isEvenQuestion -> 392.dp
+        else -> 0.dp
+    }
+
+    val targetValueY = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 941.5.dp
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
+        symmetry && isOddQuestion || !symmetry -> 941.5.dp
+        else -> 0.dp
+    }
 
     val animatedX by animateDpAsState(
-        targetValue = when {
-            !symmetry.value && isEvenQuestion -> 392.dp
-            else -> 0.dp
-        },
+        targetValue = targetValueX,
         animationSpec = tween(durationMillis = 600)
     )
 
     val animatedY by animateDpAsState(
-        targetValue = when {
-            symmetry.value && isOddQuestion || !symmetry.value -> 941.5.dp
-            else -> 0.dp
-        },
+        targetValue = targetValueY,
         animationSpec = tween(durationMillis = 600)
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
     val triggerSnackbar = remember { mutableStateOf(false) }
-    val keepTrack =stringResource(id = R.string.keep_track)
+    val keepTrack = stringResource(id = R.string.keep_track)
+
+    val action = when {
+        // If symmetry is true, rotate on first completion, dismiss on second completion.
+        symmetry && state.playerTurnTimerCount == 1 -> TimerCompletionAction.RotateTimer
+
+        // If symmetry is false, do not rotate but dismiss on second completion.
+        state.playerTurnTimerCount == 2 -> TimerCompletionAction.DismissTimer
+
+        else -> TimerCompletionAction.DoNothing
+    }
 
     LaunchedEffect(triggerSnackbar.value) {
-        if (triggerSnackbar.value && currentQuestionIndex.value == 0) {
+        if (triggerSnackbar.value && currentQuestionIndex == 0) {
             snackbarHostState.showSnackbar(
                 message = keepTrack,
                 duration = SnackbarDuration.Short
@@ -119,9 +160,9 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        if (symmetry) {
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                        if (symmetry.value) {
                             Question(
                                 questionResId = viewModel.getCurrentQuestionResId(),
                                 isUpsideDown = true
@@ -133,17 +174,30 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                                 modifier = Modifier.rotate(180f),
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(256.dp))
+                            Spacer(modifier = Modifier.height(128.dp))
+
+                            if (currentQuestionIndexValue == 11 && state.showTimer) {
+                                Timer(
+                                    viewModel = viewModel,
+                                    handleColor = Color.Red,
+                                    inactiveBarColor = Color.Red,
+                                    activeBarColor = Color.Magenta,
+                                    modifier = Modifier.size(148.dp),
+                                    action = action
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(128.dp))
 
                             Text(
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
@@ -155,10 +209,12 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                                 isUpsideDown = false
                             )
                         } else {
+                            Spacer(modifier = Modifier.height(16.dp))
+
                             Text(
                                 text = stringResource(
                                     id = R.string.question_number,
-                                    currentQuestionIndex.value + 1
+                                    currentQuestionIndex + 1
                                 ),
                                 textAlign = TextAlign.Center
                             )
@@ -191,12 +247,35 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                 .align(Alignment.TopEnd),
             onClick = { viewModel.toggleSymmetry() },
         ) {
-            val iconResId = if (symmetry.value) R.drawable.side_by_side else R.drawable.heart_symmetry
+            val iconResId = if (symmetry) R.drawable.side_by_side else R.drawable.heart_symmetry
             Icon(
                 modifier = Modifier.size(96.dp),
                 painter = painterResource(id = iconResId),
                 contentDescription = stringResource(id = R.string.toggle),
             )
+        }
+
+        Box(modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(bottom = 240.dp)
+        ) {
+            // Show the Timer only on question 11 when symmetry is false
+            if (
+                !symmetry
+                && state.showTimer
+                && currentQuestionIndexValue == 11
+            ) {
+                Column {
+                    Timer(
+                        viewModel = viewModel,
+                        handleColor = Color.Red,
+                        inactiveBarColor = Color.Red,
+                        activeBarColor = Color.Magenta,
+                        modifier = Modifier.size(148.dp),
+                        action = action
+                    )
+                }
+            }
         }
 
         Box(
@@ -206,7 +285,7 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
                 .size(24.dp)
                 .background(color = color, shape = CircleShape)
                 .then(
-                    if (currentQuestionIndex.value == 0) {
+                    if (currentQuestionIndex == 0) {
                         Modifier.clickable {
                             triggerSnackbar.value = true // Set the trigger to launch the snackbar
                         }
@@ -218,7 +297,6 @@ fun ThirtySixQuestionsMainScreen(viewModel: ThirtySixQuestionsViewModelViewModel
             modifier = Modifier.align(Alignment.BottomCenter),
             snackbarHostState = snackbarHostState
         )
-
     }
 }
 
