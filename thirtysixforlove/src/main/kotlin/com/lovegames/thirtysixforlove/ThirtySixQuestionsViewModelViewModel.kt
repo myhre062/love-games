@@ -85,30 +85,24 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
                 _isTimerRunning.value = false
                 // Increment playerTurnTimerCount
                 _thirtySixQuestionsStateFlow.update { state ->
-                    if (state is ThirtySixQuestionsState.Content) {
-                        state.copy(
-                            playerTurnTimerCount = state.playerTurnTimerCount + 1,
-                            timerCompleted = state.currentQuestionIndex >= questions.size - 1
-                        )
-                    } else {
-                        state
-                    }
+                    (state as ThirtySixQuestionsState.Content).copy(
+                        playerTurnTimerCount = state.playerTurnTimerCount + 1,
+                        timerCompleted = state.currentQuestionIndex >= questions.size - 1
+                    )
                 }
 
-                // Call the completion action
+                // Pass the completion action to update state
                 onTimerCompleted(action)
             }
         }
     }
 
-
-
     private fun onTimerCompleted(action: TimerCompletionAction) {
         when (action) {
-            TimerCompletionAction.PlaySound -> markSoundPlayed() // need to something here in the future
+            TimerCompletionAction.PlaySound -> markSoundPlayed()
             TimerCompletionAction.RotateTimer -> rotateTimer()
             TimerCompletionAction.DismissTimer -> dismissTimer()
-            else -> {}
+            else -> {} // do nothing
         }
     }
 
@@ -117,75 +111,54 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
 
     fun toggleSymmetry() {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                state.copy(symmetry = !state.symmetry)
-            } else {
-                state
-            }
+            (state as ThirtySixQuestionsState.Content).copy(symmetry = !state.symmetry)
         }
     }
 
     fun nextQuestion(navController: NavController) {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                val nextIndex = state.currentQuestionIndex + 1
-                if (nextIndex < questions.size) {
-                    state.copy(currentQuestionIndex = nextIndex)
-                } else {
-                    resetTimer()
-                    navController.navigate("thirty_six_questions_congratulations_screen")
-                    state
-                }
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            val nextIndex = contentState.currentQuestionIndex + 1
+            if (nextIndex < questions.size) {
+                contentState.copy(currentQuestionIndex = nextIndex)
             } else {
-                state
+                resetTimer()
+                navController.navigate("thirty_six_questions_congratulations_screen")
+                contentState
             }
         }
     }
 
     fun previousQuestion(navController: NavController) {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                val prevIndex = state.currentQuestionIndex - 1
-                if (prevIndex >= 0) {
-                    state.copy(currentQuestionIndex = prevIndex)
-                } else {
-                    navController.navigate("thirty_six_questions_instructions_screen")
-                    state
-                }
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            val prevIndex = contentState.currentQuestionIndex - 1
+            if (prevIndex >= 0) {
+                contentState.copy(currentQuestionIndex = prevIndex)
             } else {
-                state
+                navController.navigate("thirty_six_questions_instructions_screen")
+                contentState
             }
         }
     }
 
     fun markSoundPlayed() {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                state.copy(hasPlayedSound = true)
-            } else {
-                state
-            }
+            (state as ThirtySixQuestionsState.Content).copy(hasPlayedSound = true)
         }
     }
 
     private fun rotateTimer() {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                state.copy(rotateTimer = true)
-            } else {
-                state
-            }
+            (state as ThirtySixQuestionsState.Content).copy(rotateTimer = true)
         }
     }
 
     private fun dismissTimer() {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                if (state.playerTurnTimerCount == 2) {
-                    state.copy(showTimer = false)
-                } else {
-                    state
-                }
+            val contentState = (state as ThirtySixQuestionsState.Content)
+            if (contentState.playerTurnTimerCount == 2) {
+                contentState.copy(showTimer = false)
             } else {
                 state
             }
@@ -197,25 +170,21 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         return if (index in questions.indices) {
             questions[index]
         } else {
-            R.string.question_1 // Fallback question
+            R.string.question_1 // Fallback question if index is out of bounds.
         }
     }
 
     // Resets the ViewModel to the initial state
     fun resetViewModel() {
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                state.copy(
-                    currentQuestionIndex = 0,
-                    symmetry = false,
-                    playerTurnTimerCount = 0,
-                    showTimer = true,
-                    hasPlayedSound = false,
-                    rotateTimer = false
-                )
-            } else {
-                state
-            }
+            (state as ThirtySixQuestionsState.Content).copy(
+                currentQuestionIndex = 0,
+                symmetry = false,
+                playerTurnTimerCount = 0,
+                showTimer = true,
+                hasPlayedSound = false,
+                rotateTimer = false
+            )
         }
         resetTimer()
     }
@@ -224,17 +193,13 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         _currentTime.value = totalTime
         _isTimerRunning.value = false
         _thirtySixQuestionsStateFlow.update { state ->
-            if (state is ThirtySixQuestionsState.Content) {
-                state.copy(
-                    playerTurnTimerCount = 0,
-                    hasPlayedSound = false,
-                    rotateTimer = false,
-                    showTimer = true,
-                    timerCompleted = false
-                )
-            } else {
-                state
-            }
+            (state as ThirtySixQuestionsState.Content).copy(
+                playerTurnTimerCount = 0,
+                hasPlayedSound = false,
+                rotateTimer = false,
+                showTimer = true,
+                timerCompleted = false
+            )
         }
     }
 }
