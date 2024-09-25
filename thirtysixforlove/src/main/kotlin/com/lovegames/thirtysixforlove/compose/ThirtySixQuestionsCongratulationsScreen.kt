@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
+import com.lovegames.thirtysixforlove.TimerCompletionAction
 import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
 import com.lovegames.thritysixforlove.R
 
@@ -45,13 +46,16 @@ private fun ThirtySixQuestionsCongratulationsScreenContnent(
     state: ThirtySixQuestionsState.Content,
 ) {
     val context = LocalContext.current
+    val action = when {
+        state.timerCompleted -> TimerCompletionAction.PlaySound
+        else -> TimerCompletionAction.DoNothing
+    }
 
     // Remember if the sound has been played, and preserve it across navigation
     if (state.timerCompleted && !state.hasPlayedSound) {
         val mediaPlayer = remember { MediaPlayer.create(context, R.raw.harp_strum) }
         DisposableEffect(Unit) {
             mediaPlayer.start()
-            viewModel.markSoundPlayed()
             onDispose { mediaPlayer.release() }
         }
     }
@@ -90,7 +94,8 @@ private fun ThirtySixQuestionsCongratulationsScreenContnent(
                 handleColor = Color.Red,
                 inactiveBarColor = Color.Red,
                 activeBarColor = Color.Magenta,
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier.size(200.dp),
+                action = action
             )
 
             Spacer(modifier = Modifier.height(32.dp))

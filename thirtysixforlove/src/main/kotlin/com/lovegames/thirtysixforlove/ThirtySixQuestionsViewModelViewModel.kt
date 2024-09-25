@@ -56,7 +56,7 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         ThirtySixQuestionsState.Content()
     )
 
-    val totalTime = 2400L // make sure this is 240000L (4 min) before pushing code
+    val totalTime = 240000L // make sure this is 240000L (4 min) before pushing code
     private val _currentTime = MutableStateFlow(totalTime)
     val currentTime: StateFlow<Long> = _currentTime
 
@@ -105,7 +105,7 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
 
     private fun onTimerCompleted(action: TimerCompletionAction) {
         when (action) {
-            TimerCompletionAction.PlaySound -> {} // need to something here in the future
+            TimerCompletionAction.PlaySound -> markSoundPlayed() // need to something here in the future
             TimerCompletionAction.RotateTimer -> rotateTimer()
             TimerCompletionAction.DismissTimer -> dismissTimer()
             else -> {}
