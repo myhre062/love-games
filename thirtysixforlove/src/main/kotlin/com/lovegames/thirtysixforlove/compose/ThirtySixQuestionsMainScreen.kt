@@ -75,22 +75,30 @@ private fun ThirtySixQuestionsMainScreenContent(
     val currentQuestionIndexValue = currentQuestionIndex + 1
     val isEvenQuestion = currentQuestionIndexValue % 2 == 0
     val isOddQuestion = currentQuestionIndexValue % 2 == 1
-    val color = if (isEvenQuestion || state.playerTurnTimerCount == 1) Color.Magenta else Color.Red
+    val isQuestion11 = currentQuestionIndex == 10
+    val color = if (isEvenQuestion || (state.playerTurnTimerCount >= 1 && isQuestion11)) Color.Magenta else Color.Red
+
+    val targetValueX = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 392.dp
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
+        !symmetry && isEvenQuestion -> 392.dp
+        else -> 0.dp
+    }
+
+    val targetValueY = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 941.5.dp
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
+        symmetry && isOddQuestion || !symmetry -> 941.5.dp
+        else -> 0.dp
+    }
 
     val animatedX by animateDpAsState(
-        targetValue = when {
-            !symmetry && (isEvenQuestion || state.playerTurnTimerCount == 1) -> 392.dp
-            else -> 0.dp
-        },
+        targetValue = targetValueX,
         animationSpec = tween(durationMillis = 600)
     )
 
     val animatedY by animateDpAsState(
-        targetValue = when {
-            symmetry && state.playerTurnTimerCount == 1 -> 0.dp
-            symmetry && isOddQuestion || !symmetry -> 941.5.dp
-            else -> 0.dp
-        },
+        targetValue = targetValueY,
         animationSpec = tween(durationMillis = 600)
     )
 

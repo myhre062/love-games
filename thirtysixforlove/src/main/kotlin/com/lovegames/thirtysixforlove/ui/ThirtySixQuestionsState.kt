@@ -2,9 +2,9 @@ package com.lovegames.thirtysixforlove.ui
 
 sealed class ThirtySixQuestionsState {
     data class Content(
-        val currentQuestionIndex: Int,
-        val symmetry: Boolean,
-        val playerTurnTimerCount: Int,
+        val currentQuestionIndex: Int = 0,
+        val symmetry: Boolean = false,
+        val playerTurnTimerCount: Int = 0,
         val showTimer: Boolean = true,
         val timerCompleted: Boolean = false,
         val hasPlayedSound: Boolean = false,

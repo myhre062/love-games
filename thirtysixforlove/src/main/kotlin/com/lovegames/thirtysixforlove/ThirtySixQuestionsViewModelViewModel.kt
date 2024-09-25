@@ -53,14 +53,10 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
     )
 
     private val _thirtySixQuestionsStateFlow = MutableStateFlow<ThirtySixQuestionsState>(
-        ThirtySixQuestionsState.Content(
-            currentQuestionIndex = 0,
-            symmetry = false,
-            playerTurnTimerCount = 0
-        )
+        ThirtySixQuestionsState.Content()
     )
 
-    val totalTime = 2400L // make sure this is 240000L before pushing code
+    val totalTime = 2400L // make sure this is 240000L (4 min) before pushing code
     private val _currentTime = MutableStateFlow(totalTime)
     val currentTime: StateFlow<Long> = _currentTime
 
@@ -90,12 +86,10 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
                 // Increment playerTurnTimerCount
                 _thirtySixQuestionsStateFlow.update { state ->
                     if (state is ThirtySixQuestionsState.Content) {
-                        state.copy(playerTurnTimerCount = state.playerTurnTimerCount + 1)
-                        if (state.currentQuestionIndex >= questions.size-1) {
-                            state.copy(timerCompleted = true)
-                        } else {
-                            state
-                        }
+                        state.copy(
+                            playerTurnTimerCount = state.playerTurnTimerCount + 1,
+                            timerCompleted = state.currentQuestionIndex >= questions.size - 1
+                        )
                     } else {
                         state
                     }
@@ -174,7 +168,7 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         }
     }
 
-    fun rotateTimer() {
+    private fun rotateTimer() {
         _thirtySixQuestionsStateFlow.update { state ->
             if (state is ThirtySixQuestionsState.Content) {
                 state.copy(rotateTimer = true)
@@ -184,7 +178,7 @@ class ThirtySixQuestionsViewModelViewModel : ViewModel() {
         }
     }
 
-    fun dismissTimer() {
+    private fun dismissTimer() {
         _thirtySixQuestionsStateFlow.update { state ->
             if (state is ThirtySixQuestionsState.Content) {
                 if (state.playerTurnTimerCount == 2) {
