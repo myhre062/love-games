@@ -24,13 +24,15 @@ import androidx.navigation.NavController
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import com.lovegames.moregames.MoreGamesButton
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 import com.lovegames.thritysixforlove.R
 
 @Composable
 fun ThirtySixQuestionsTheyMightKissScreen(
     viewModel: ThirtySixQuestionsViewModelViewModel,
-    navController: NavController
+    navController: NavController,
+    showAd: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -76,14 +78,13 @@ fun ThirtySixQuestionsTheyMightKissScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
+        MoreGamesButton(
             onClick = {
                 viewModel.resetViewModel()
                 navController.navigate("main_screen")
-            }
-        ) {
-            Text(text = stringResource(R.string.thirty_six_questions_more_games))
-        }
+            },
+            showAd = showAd
+        )
     }
 }
 
@@ -92,6 +93,7 @@ fun ThirtySixQuestionsTheyMightKissScreen(
 fun ThirtySixQuestionsTheyMightKissScreenPreview() {
     ThirtySixQuestionsTheyMightKissScreen(
         viewModel = ThirtySixQuestionsViewModelViewModel(),
-        navController = NavController(LocalContext.current)
+        navController = NavController(LocalContext.current),
+        showAd = {}
     )
 }

@@ -12,6 +12,9 @@ xmlns:tools="http://schemas.android.com/tools">
     android:supportsRtl="true"
     android:theme="@style/Theme.LoveGames"
     tools:targetApi="31">
+    <meta-data
+        android:name="com.google.android.gms.ads.ca-app-pub-5193445943044580~9210123334"
+        android:value="ca-app-pub-5193445943044580~9210123334"/>
     <activity
         android:name=".MainActivity"
         android:screenOrientation="portrait"
