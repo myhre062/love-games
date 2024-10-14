@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.example.lovegames.compose.MainScreen
 import com.example.lovegames.compose.NavigationComponent
@@ -15,6 +16,8 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private var mInterstitialAd: InterstitialAd? = null
@@ -22,11 +25,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize Mobile Ads SDK
-        MobileAds.initialize(this)
+        // Initialize Mobile Ads SDK]
+        lifecycleScope.launch(Dispatchers.IO) {
+            MobileAds.initialize(this@MainActivity)
+        }
 
         // Load the interstitial ad
-        loadInterstitialAd()
+//        loadInterstitialAd()
 
         enableEdgeToEdge()
         setContent {
