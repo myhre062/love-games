@@ -34,11 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -78,19 +80,32 @@ private fun ThirtySixQuestionsMainScreenContent(
     val isQuestion11 = currentQuestionIndex == 10
     val color = if (isEvenQuestion || (state.playerTurnTimerCount >= 1 && isQuestion11)) Color.Magenta else Color.Red
 
-    val targetValueX = when {
-        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 392.dp
-        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
-        !symmetry && isEvenQuestion -> 392.dp
-        else -> 0.dp
+    val context = LocalContext.current
+    val resources = context.resources
+    val displayMetrics = resources.displayMetrics
+
+    // Function to convert pixel values to dp based on the device's density
+    fun pxToDp(px: Float): Dp {
+        return (px / (displayMetrics.densityDpi / 160f)).dp
     }
 
-    val targetValueY = when {
-        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 941.5.dp
-        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0.dp
-        symmetry && isOddQuestion || !symmetry -> 941.5.dp
-        else -> 0.dp
+    val targetValueXInPx = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 892f
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 0f
+        !symmetry && isEvenQuestion -> 892f
+        else -> 0f
     }
+
+    val targetValueYInPx = when {
+        isQuestion11 && state.playerTurnTimerCount >= 1 && !symmetry -> 2120f
+        isQuestion11 && state.playerTurnTimerCount >= 1 && symmetry -> 16f
+        symmetry && isOddQuestion || !symmetry -> 2120f
+        else -> 16f
+    }
+
+    // Convert pixel values to dp
+    val targetValueX = pxToDp(targetValueXInPx)
+    val targetValueY = pxToDp(targetValueYInPx)
 
     val animatedX by animateDpAsState(
         targetValue = targetValueX,
@@ -160,6 +175,8 @@ private fun ThirtySixQuestionsMainScreenContent(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val spacerHeight = 128f
+                        val spacerHeightInDp = pxToDp(spacerHeight)
                         if (symmetry) {
                             Spacer(modifier = Modifier.height(16.dp))
 
@@ -179,7 +196,7 @@ private fun ThirtySixQuestionsMainScreenContent(
                                 textAlign = TextAlign.Center
                             )
 
-                            Spacer(modifier = Modifier.height(128.dp))
+                            Spacer(modifier = Modifier.height(spacerHeightInDp))
 
                             if (currentQuestionIndexValue == 11 && state.showTimer) {
                                 Timer(
@@ -192,7 +209,7 @@ private fun ThirtySixQuestionsMainScreenContent(
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(128.dp))
+                            Spacer(modifier = Modifier.height(spacerHeightInDp))
 
                             Text(
                                 text = stringResource(
@@ -255,9 +272,16 @@ private fun ThirtySixQuestionsMainScreenContent(
             )
         }
 
+        // Define the bottom padding in pixels (can be any value you want to adjust)
+        val bottomPaddingInPx = 440f  // This is the pixel value for the bottom padding
+
+        // Convert the bottom padding from pixels to dp
+        val bottomPaddingInDp = pxToDp(bottomPaddingInPx)
+
+
         Box(modifier = Modifier
             .align(Alignment.BottomCenter)
-            .padding(bottom = 240.dp)
+            .padding(bottom = bottomPaddingInDp)
         ) {
             // Show the Timer only on question 11 when symmetry is false
             if (
