@@ -12,6 +12,8 @@ appcompat = "1.6.1"
 material = "1.10.0"
 navigationRuntimeKtx = "2.7.7"
 navigationCompose = "2.7.7"
+playServicesAds = "23.4.0"
+playServicesAdsVersion = "22.2.0"
 runtimeAndroid = "1.6.8"
 
 [libraries]
@@ -34,6 +36,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-runtime-android = { group = "androidx.compose.runtime", name = "runtime-android", version.ref = "runtimeAndroid" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+play-services-ads-v2220 = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAdsVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

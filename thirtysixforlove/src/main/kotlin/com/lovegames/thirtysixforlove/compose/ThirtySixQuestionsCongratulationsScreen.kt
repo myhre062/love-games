@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.lovegames.moregames.MoreGamesButton
 import com.lovegames.thirtysixforlove.ThirtySixQuestionsViewModelViewModel
 import com.lovegames.thirtysixforlove.TimerCompletionAction
 import com.lovegames.thirtysixforlove.ui.ThirtySixQuestionsState
@@ -24,7 +25,8 @@ import com.lovegames.thritysixforlove.R
 @Composable
 fun ThirtySixQuestionsCongratulationsScreen(
     viewModel: ThirtySixQuestionsViewModelViewModel,
-    navController: NavController
+    navController: NavController,
+    showAd: () -> Unit
 ) {
     val state = viewModel.state().collectAsState().value
 
@@ -33,7 +35,8 @@ fun ThirtySixQuestionsCongratulationsScreen(
             ThirtySixQuestionsCongratulationsScreenContnent(
                 viewModel,
                 navController,
-                state
+                state,
+                showAd
             )
         }
     }
@@ -44,6 +47,7 @@ private fun ThirtySixQuestionsCongratulationsScreenContnent(
     viewModel: ThirtySixQuestionsViewModelViewModel,
     navController: NavController,
     state: ThirtySixQuestionsState.Content,
+    showAd: () -> Unit
 ) {
     val context = LocalContext.current
     val action = when {
@@ -117,16 +121,15 @@ private fun ThirtySixQuestionsCongratulationsScreenContnent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
+            MoreGamesButton(
                 onClick = {
                     if (state.timerCompleted) {
                         viewModel.resetViewModel()
                         navController.navigate("main_screen")
                     }
-                }
-            ) {
-                Text(text = stringResource(R.string.thirty_six_questions_more_games))
-            }
+                },
+                showAd = showAd
+            )
         }
     }
 }
@@ -136,6 +139,7 @@ private fun ThirtySixQuestionsCongratulationsScreenContnent(
 fun ThirtySixQuestionsCongratulationsScreenPreview() {
     ThirtySixQuestionsCongratulationsScreen(
         viewModel = ThirtySixQuestionsViewModelViewModel(),
-        navController = NavController(LocalContext.current)
+        navController = NavController(LocalContext.current),
+        showAd = {}
     )
 }

@@ -14,7 +14,10 @@ import com.lovegames.thirtysixforlove.compose.ThirtySixQuestionsTheyMightKissScr
 
 
 @Composable
-fun NavigationComponent(navController: NavHostController) {
+fun NavigationComponent(
+    navController: NavHostController,
+    showInterstitialAd: () -> Unit
+) {
     val thirtySixQuestionsViewModelViewModel: ThirtySixQuestionsViewModelViewModel = viewModel()
     NavHost(navController = navController, startDestination = "main_screen") {
         composable("main_screen") {
@@ -33,10 +36,18 @@ fun NavigationComponent(navController: NavHostController) {
             )
         }
         composable("thirty_six_questions_congratulations_screen") {
-            ThirtySixQuestionsCongratulationsScreen(thirtySixQuestionsViewModelViewModel, navController)
+            ThirtySixQuestionsCongratulationsScreen(
+                viewModel = thirtySixQuestionsViewModelViewModel,
+                navController = navController,
+                showAd = showInterstitialAd
+            )
         }
         composable("thirty_six_questions_they_might_kiss_screen") {
-            ThirtySixQuestionsTheyMightKissScreen(thirtySixQuestionsViewModelViewModel,navController)
+            ThirtySixQuestionsTheyMightKissScreen(
+                viewModel = thirtySixQuestionsViewModelViewModel,
+                navController = navController,
+                showAd = showInterstitialAd
+            )
         }
     }
 }
